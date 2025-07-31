@@ -1,0 +1,9 @@
+venv
+.venv
+.idea
+**/__pycache__
+build
+dist
+alerk.egg-info
+set.yaml
+volume

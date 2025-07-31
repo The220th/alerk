@@ -1,0 +1,21 @@
+app:
+  root: "/path/to/root"
+  endpoint: "/what"
+  priv_key: "alerk_priv_key"
+
+uvicorn:
+  inf: "0.0.0.0"
+  port: 8000
+  log_level: "info"
+
+telegram:
+  db_path: "{ROOT}/telegram/database.db"
+  token: "your_token_here"
+
+smalk:
+  - pub_key: "smalk1_key"
+    code: "smalk1_code"
+  - pub_key: "smalk2_key"
+    code: "smalk2_code"
+  - pub_key: "smalk3_key"
+    code: "smalk3_code"

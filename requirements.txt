@@ -1,0 +1,9 @@
+argparse
+ksupk
+numpy
+requests
+pyyaml
+uvicorn
+fastapi
+cryptography
+pydantic
