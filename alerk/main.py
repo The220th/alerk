@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from alerk.args_parsing import get_args
 from alerk.setting_manager import SettingManager
 from alerk.crypto import gen_asym_keys, asym_key_to_str, str_to_asym_key, compare_two_keys
-from alerk.message import MessageCoded
+from alerk.message import MessageCoded, test_ejh3jvnnbt
 
 
 args = get_args()
@@ -21,6 +21,12 @@ if args.command == "gen_keys":
     print(f"Private key: \n{priv_key_str}")
     print(f"\nPublic key: \n{pub_key_str}\n")
     exit()
+elif args.command == "test":
+    test_ejh3jvnnbt()
+elif args.command == "start":
+    pass
+else:
+    raise RuntimeError(f"WTF command \"args.command\"?")
 
 setting_manager = SettingManager(args.settings_path)
 

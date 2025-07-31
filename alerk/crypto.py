@@ -2,9 +2,10 @@
 
 import base64
 
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes
 
 
 def gen_asym_keys() -> tuple[RSAPrivateKey, RSAPublicKey]:
@@ -53,6 +54,7 @@ def str_to_asym_key(key_str_base_64: str, priv_pub: bool) -> RSAPrivateKey | RSA
 
     return key
 
+
 def compare_two_keys(key1: RSAPrivateKey | RSAPublicKey, key2: RSAPrivateKey | RSAPublicKey) -> bool:
     if isinstance(key1, RSAPrivateKey) and isinstance(key2, RSAPrivateKey):
         key1_bytes = key1.private_bytes(
@@ -79,3 +81,27 @@ def compare_two_keys(key1: RSAPrivateKey | RSAPublicKey, key2: RSAPrivateKey | R
         return key1_bytes == key2_bytes
     else:
         raise ValueError(f"Keys must be only RSAPrivateKey or RSAPublicKey.")
+
+
+def asym_encrypt(bs: bytes, pub_key: RSAPublicKey) -> bytes:
+    ciphertext = pub_key.encrypt(
+        bs,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return ciphertext
+
+
+def asym_decrypt(bs: bytes, priv_key: RSAPrivateKey) -> bytes:
+    decrypted = priv_key.decrypt(
+        bs,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return decrypted

@@ -18,4 +18,6 @@ def get_args() -> argparse.Namespace:
 
     gen_keys_parser = subparsers.add_parser("gen_keys", help="generate keys")
 
+    test_parser = subparsers.add_parser("test", help="???")
+
     return parser.parse_args()
