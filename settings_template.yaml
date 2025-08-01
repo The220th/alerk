@@ -1,8 +1,6 @@
 app:
   root: "/path/to/root"
   endpoint: "/your_endpoint"
-  priv_key: "alerk_priv_key"
-  pub_key: "alerk_pub_key"
 
 uvicorn:
   inf: "0.0.0.0"
@@ -12,6 +10,11 @@ uvicorn:
 telegram:
   db_path: "{ROOT}/telegram/database.db"
   token: "your_token_here"
+
+keys:
+  priv_key: "alerk_priv_key"
+  pub_key: "alerk_pub_key"  # optional
+  sign_key: "alerk_sigh_key"
 
 smalk:
   - pub_key: "smalk1_key"

@@ -8,6 +8,14 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 
 
+def bytes2str(bs: bytes) -> str:
+    return base64.b64encode(bs).decode(encoding="utf-8")
+
+
+def str2bytes(s: str) -> bytes:
+    return base64.b64decode(s.encode(encoding="utf-8"))
+
+
 def gen_asym_keys() -> tuple[RSAPrivateKey, RSAPublicKey]:
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -37,13 +45,15 @@ def asym_key_to_str(key: RSAPrivateKey | RSAPublicKey) -> str:
         raise ValueError(f"Key must be only RSAPrivateKey or RSAPublicKey.")
 
     byte_string = key_str.encode(encoding="utf-8")
-    base64_string = base64.b64encode(byte_string).decode(encoding="utf-8")
+    # base64_string = base64.b64encode(byte_string).decode(encoding="utf-8")
+    base64_string = bytes2str(byte_string)
 
     return base64_string
 
 
 def str_to_asym_key(key_str_base_64: str, priv_pub: bool) -> RSAPrivateKey | RSAPublicKey:
-    decoded_bytes = base64.b64decode(key_str_base_64)
+    # decoded_bytes = base64.b64decode(key_str_base_64)
+    decoded_bytes = str2bytes(key_str_base_64)
     key_str = decoded_bytes.decode(encoding="utf-8")
     key_str = key_str.strip()
 
@@ -113,3 +123,44 @@ def asym_decrypt(bs: bytes, priv_key: RSAPrivateKey) -> bytes:
         )
     )
     return decrypted
+
+
+def asym_sign(hash_value: bytes, priv_key: RSAPrivateKey) -> bytes:
+    """
+
+    :param hash_value: <- hashlib.sha256().digest() or hashes.Hash(hashes.SHA256()).finalize()
+    :param priv_key: private key
+    :return: signature (bytes)
+    """
+    signature = priv_key.sign(
+        hash_value,
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()),
+            salt_length=padding.PSS.MAX_LENGTH
+        ),
+        hashes.SHA256()
+    )
+    return signature
+
+
+def asym_verify(hash_value: bytes, signature: bytes, pub_key: RSAPublicKey) -> bool:
+    """
+
+    :param hash_value: hash what was signed in asym_sign
+    :param signature: <- asym_sign(...)
+    :param pub_key: public key
+    :return: bool <- if this pub key sign it?
+    """
+    try:
+        pub_key.verify(
+            signature,
+            hash_value,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256()
+        )
+        return True
+    except Exception as e:
+        return False
