@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import base64
-
+import hashlib
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 from cryptography.hazmat.primitives import serialization
@@ -36,15 +36,15 @@ def asym_key_to_str(key: RSAPrivateKey | RSAPublicKey) -> str:
     else:
         raise ValueError(f"Key must be only RSAPrivateKey or RSAPublicKey.")
 
-    byte_string = key_str.encode("utf-8")
-    base64_string = base64.b64encode(byte_string).decode('utf-8')
+    byte_string = key_str.encode(encoding="utf-8")
+    base64_string = base64.b64encode(byte_string).decode(encoding="utf-8")
 
     return base64_string
 
 
 def str_to_asym_key(key_str_base_64: str, priv_pub: bool) -> RSAPrivateKey | RSAPublicKey:
     decoded_bytes = base64.b64decode(key_str_base_64)
-    key_str = decoded_bytes.decode('utf-8')
+    key_str = decoded_bytes.decode(encoding="utf-8")
     key_str = key_str.strip()
 
     if priv_pub:
@@ -81,6 +81,14 @@ def compare_two_keys(key1: RSAPrivateKey | RSAPublicKey, key2: RSAPrivateKey | R
         return key1_bytes == key2_bytes
     else:
         raise ValueError(f"Keys must be only RSAPrivateKey or RSAPublicKey.")
+
+
+def calc_key_hash(key: RSAPrivateKey | RSAPublicKey) -> str:
+    key_str = asym_key_to_str(key)
+    hash_object = hashlib.sha256()
+    hash_object.update(key_str.encode(encoding="utf-8"))
+    res = hash_object.hexdigest()
+    return res
 
 
 def asym_encrypt(bs: bytes, pub_key: RSAPublicKey) -> bytes:

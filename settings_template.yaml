@@ -1,7 +1,8 @@
 app:
   root: "/path/to/root"
-  endpoint: "/what"
+  endpoint: "/your_endpoint"
   priv_key: "alerk_priv_key"
+  pub_key: "alerk_pub_key"
 
 uvicorn:
   inf: "0.0.0.0"

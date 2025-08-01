@@ -1,63 +1,106 @@
 # coding: utf-8
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Self
 import json
 import os
 import base64
 import random
-
+import hashlib
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
+
 from alerk.crypto import asym_encrypt, asym_decrypt, gen_asym_keys
 
 
-class MessageCoded(BaseModel):
+class MessageEn(BaseModel):
+    h: str
     m: List[str]  # max len 214
 
 
-class Message:
+class MessageContainer:
 
     SALT_SIZE: int = 16
     CHUNK_BEFORE_SALT_MIN_SIZE: int = 50
     CHUNK_BEFORE_SALT_MAX_SIZE: int = 170 # 16 + 170 + 16 < 214
 
-    def __init__(self, data: dict[str: str] | tuple[MessageCoded, RSAPrivateKey]):
-        if isinstance(data, tuple) and len(data) == 2 and isinstance(data[0], MessageCoded) and isinstance(data[1], RSAPrivateKey):
-            self.d = Message.coded_to_dict(data[0], data[1])
+    def __init__(self, data: dict[str: str] | MessageEn):
+        if isinstance(data, MessageEn):
+            self._type = True
         elif isinstance(data, dict):
-            self.d = data
+            self._type = False
         else:
             raise ValueError("data must be only dict[str: str] or tuple[MessageCoded, RSAPrivateKey]")
+        self.data = data
 
     def get_data(self):
-        return self.d
+        return self.data
 
-    def get_as_codded(self, pub_key: RSAPublicKey) -> MessageCoded:
-        return Message.transform_as_coded(self.d, pub_key)
+    def encrypt(self, pub_key: RSAPublicKey) -> Self:
+        if self.is_contains_decrypted():
+            msgen = MessageContainer._to_en(self.data, pub_key)
+            return MessageContainer(msgen)
+        else:
+            raise ValueError("This container contains already encrypted data.")
+
+    def decrypt(self, priv_key: RSAPrivateKey):
+        if self.is_contains_encrypted():
+            msgde = MessageContainer._to_de(self.data, priv_key)
+            return MessageContainer(msgde)
+        else:
+            raise ValueError("This container contains already decrypted data.")
+
+
+    def is_contains_decrypted(self):
+        return self._type == False
+
+
+    def is_contains_encrypted(self):
+        return self._type == True
+
 
     @staticmethod
-    def transform_as_coded(d: dict[str: str], pub_key: RSAPublicKey) -> MessageCoded:
+    def _to_en(d: dict[str: str], pub_key: RSAPublicKey) -> MessageEn:
         d_str = json.dumps(d)
         byte_array = d_str.encode(encoding="utf-8")
-        chunks = Message.split_byte_array(byte_array)
-        res = []
+        chunks = MessageContainer.split_byte_array(byte_array)
+        res: list[str] = []
         for chunk_i in chunks:
-            salt1 = os.urandom(Message.SALT_SIZE)
-            salt2 = os.urandom(Message.SALT_SIZE)
+            salt1 = os.urandom(MessageContainer.SALT_SIZE)
+            salt2 = os.urandom(MessageContainer.SALT_SIZE)
             bs = salt1 + chunk_i + salt2
             bs = asym_encrypt(bs, pub_key)
-            buff = base64.b64encode(bs).decode('utf-8')
+            buff = base64.b64encode(bs).decode(encoding="utf-8")
             res.append(buff)  # max len 214
-        mc = MessageCoded(m=res)
+
+        hash_object = hashlib.sha256()
+        for bs_i in res:
+            hash_object.update(bs_i.encode(encoding="utf-8"))
+        salt = os.urandom(MessageContainer.SALT_SIZE)
+        h_b = salt + hash_object.digest()
+        h_b_en = asym_encrypt(h_b, pub_key)
+        h = base64.b64encode(h_b_en).decode(encoding="utf-8")
+
+        mc = MessageEn(h=h, m=res)
         return mc
 
     @staticmethod
-    def coded_to_dict(mc: MessageCoded, priv_key: RSAPrivateKey) -> dict[str: str]:
+    def _to_de(men: MessageEn, priv_key: RSAPrivateKey) -> dict[str: str]:
+        h_b_en = base64.b64decode(men.h)
+        h_b = asym_decrypt(h_b_en, priv_key)
+        h_b = h_b[MessageContainer.SALT_SIZE:]
+
+        hash_object = hashlib.sha256()
+        for bs_i in men.m:
+            hash_object.update(bs_i.encode(encoding="utf-8"))
+
+        if h_b != hash_object.digest():
+            raise ValueError(f"Wrong key or data")
+
         byte_list = []
-        for el_i in mc.m:
+        for el_i in men.m:
             bs = base64.b64decode(el_i)
             decoded_bytes = asym_decrypt(bs, priv_key)
-            decoded_bytes = decoded_bytes[Message.SALT_SIZE:-Message.SALT_SIZE]
+            decoded_bytes = decoded_bytes[MessageContainer.SALT_SIZE:-MessageContainer.SALT_SIZE]
             byte_list.append(decoded_bytes)
         res = b''.join(byte_list)
         d_str = res.decode(encoding="utf-8")
@@ -66,7 +109,7 @@ class Message:
 
     @staticmethod
     def split_byte_array(byte_array):
-        min_length, max_length = Message.CHUNK_BEFORE_SALT_MIN_SIZE, Message.CHUNK_BEFORE_SALT_MAX_SIZE
+        min_length, max_length = MessageContainer.CHUNK_BEFORE_SALT_MIN_SIZE, MessageContainer.CHUNK_BEFORE_SALT_MAX_SIZE
         chunks = []
         i = 0
         while i < len(byte_array):
@@ -75,23 +118,3 @@ class Message:
             chunks.append(chunk)
             i += len(chunk)
         return chunks
-
-
-def test_ejh3jvnnbt():
-    from ksupk import gen_random_string
-    from tqdm import tqdm
-    for i in tqdm(range(1000)):
-        priv_key, pub_key = gen_asym_keys()
-        records = random.randint(4, 1000)
-        d = {}
-        for _ in range(records):
-            rnd_str = gen_random_string()
-            d[rnd_str] = gen_random_string(random.randint(0, 1000))
-
-        msg = Message(d)
-        mc = msg.get_as_codded(pub_key)
-        msg2 = Message((mc, priv_key))
-        assert msg.get_data() == msg2.get_data()
-
-if __name__ == "__main__":
-    test_ejh3jvnnbt()

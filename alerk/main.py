@@ -7,8 +7,8 @@ from pydantic import ValidationError
 
 from alerk.args_parsing import get_args
 from alerk.setting_manager import SettingManager
-from alerk.crypto import gen_asym_keys, asym_key_to_str, str_to_asym_key, compare_two_keys
-from alerk.message import MessageCoded, test_ejh3jvnnbt
+from alerk.crypto import gen_asym_keys, asym_key_to_str, str_to_asym_key, compare_two_keys, calc_key_hash
+from alerk.message import MessageEn
 
 
 args = get_args()
@@ -19,10 +19,14 @@ if args.command == "gen_keys":
     assert compare_two_keys(str_to_asym_key(priv_key_str, False), priv_key)
     assert compare_two_keys(str_to_asym_key(pub_key_str, True), pub_key)
     print(f"Private key: \n{priv_key_str}")
-    print(f"\nPublic key: \n{pub_key_str}\n")
+    print(f"Private key hash: {calc_key_hash(priv_key)}")
+    print(f"\nPublic key: \n{pub_key_str}")
+    print(f"Public key hash: {calc_key_hash(pub_key)}\n")
     exit()
 elif args.command == "test":
-    test_ejh3jvnnbt()
+    from alerk.tests import cur_test
+    cur_test()
+    exit()
 elif args.command == "start":
     pass
 else:
@@ -37,7 +41,7 @@ app = FastAPI()
 
 
 @app.post(setting_manager.get_endpoint())
-def create_item(item: MessageCoded):
+def create_item(item: MessageEn):
     total_price = item.price * item.quantity
     response = {
         "name": item.name,

@@ -1,3 +1,3 @@
 # alerk
 
-alerk reports on events.
+alerk, if **aler**t, reports on events.
