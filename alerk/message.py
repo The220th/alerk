@@ -137,6 +137,9 @@ class KMessage:
     def get_pub_sign_key_hash(self) -> str | None:
         return self.pub_key_hash
 
+    def is_equal(self, kmsg2: "KMessage") -> bool:
+        return self.calc_hash() == kmsg2.calc_hash()
+
 
 class MessageContainer:
 
@@ -153,7 +156,7 @@ class MessageContainer:
             raise ValueError("data must be only dict[str: str] or tuple[MessageCoded, RSAPrivateKey]")
         self.data = data
 
-    def get_data(self):
+    def get_data(self) -> dict[str: str] | MessageEn:
         return self.data
 
     def encrypt(self, pub_key: RSAPublicKey) -> "MessageContainer":

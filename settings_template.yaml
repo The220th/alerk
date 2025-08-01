@@ -12,9 +12,10 @@ telegram:
   token: "your_token_here"
 
 keys:
-  priv_key: "alerk_priv_key"
-  pub_key: "alerk_pub_key"  # optional
-  sign_key: "alerk_sigh_key"
+  priv_key: "alerk_priv_key"  # private part
+  pub_key: "alerk_pub_key"  # public part, optional
+  sign_key: "alerk_sigh_key"  # private part
+  verify_key: "alerk_verify_key"  # public part, optional
 
 smalk:
   - pub_key: "smalk1_key"
