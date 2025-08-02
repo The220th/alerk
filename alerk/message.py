@@ -66,8 +66,8 @@ class KMessage:
         """
 
         :param from_who_priv_sign_key: Key to sign this message
-        :param from_who_pub_sign_key: The key that will be used to verify the signature
-        :return:
+        :param from_who_pub_sign_key: The key that will be used to **verify** the signature
+        :return: {"text": {TEXT}, "raws": {RAWS}, "pub_key_hash": {PUB_KEY_HASH}, "sign": {SIGN}}
         """
         sign_key: RSAPrivateKey = from_who_priv_sign_key
         pub_key_hash: str = calc_key_hash(from_who_pub_sign_key)
@@ -83,17 +83,21 @@ class KMessage:
         """
 
         :param from_who_priv_sign_key: Key to sign this message
-        :param from_who_pub_sign_key: The key that will be used to verify the signature
+        :param from_who_pub_sign_key: The key that will be used to **verify** the signature
         :return:
         """
         return json.dumps(self.to_dict(from_who_priv_sign_key, from_who_pub_sign_key), indent=4)
+
+    @staticmethod
+    def get_pub_key_hash(d: dict) -> str:
+        return d["pub_key_hash"]
 
     @staticmethod
     def from_json(json_text: str, from_who_pub_sign_key: RSAPublicKey) -> "KMessage":
         """
 
         :param json_text: text of json
-        :param from_who_pub_sign_key: The key that will be used to verify the signature
+        :param from_who_pub_sign_key: The key that will be used to **verify** the signature
         :return:
         """
         d = json.loads(json_text)
@@ -104,7 +108,7 @@ class KMessage:
         """
 
         :param d: dict, what represents KMessage <- KMessage.to_dict(...)
-        :param from_who_pub_sign_key:The key that will be used to verify the signature
+        :param from_who_pub_sign_key:The key that will be used to **verify** the signature
         :return:
         """
         if "text" not in d or "raws" not in d or "pub_key_hash" not in d or "sign" not in d:
@@ -256,3 +260,67 @@ class MessageContainer:
             chunks.append(chunk)
             i += len(chunk)
         return chunks
+
+
+class MessageWrapper:
+    MSG_TYPE_OK: int = 0
+    MSG_TUPE_REPORT: int = 1
+    MSG_TYPE_ERROR: int = 2
+    MSG_TYPE_CUSTOM: int = 3
+
+    @staticmethod
+    def check_type(msg_type: int) -> bool:
+        if msg_type in MessageWrapper.get_all_types():
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def get_all_types() -> list[int]:
+        return [MessageWrapper.MSG_TYPE_OK, MessageWrapper.MSG_TUPE_REPORT, MessageWrapper.MSG_TYPE_ERROR, MessageWrapper.MSG_TYPE_CUSTOM]
+
+    def __init__(self, msg_type: int, text: str, is_attachments: bool):
+        self.msg_type: int = msg_type
+        self.text: str = text
+        self.attachments: bool = is_attachments
+
+    def to_dict(self) -> dict:
+        return {"type": self.msg_type, "text": self.text, "attachments": self.attachments}
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+
+    @staticmethod
+    def from_dict(d: dict) -> "MessageWrapper":
+        if "type" in d and "text" in d and "attachments" in d:
+            pass
+        else:
+            raise ValueError("dict must contains keys: [\"type\", \"text\", \"attachments\"]")
+        if isinstance(d["type"], int) and MessageWrapper.check_type(d["type"]):
+            pass
+        else:
+            raise ValueError(f"Message type must be only of these: {MessageWrapper.get_all_types()}.")
+        if isinstance(d["text"], str):
+            pass
+        else:
+            raise ValueError(f"Message text must be str, not {type(d['text'])}.")
+        if isinstance(d["attachments"], bool):
+            pass
+        else:
+            raise ValueError(f"Message attachments flag must be bool, not {type(d['attachments'])}.")
+        msg_type, msg_text, msg_attachments = d["type"], d["text"], d["attachments"]
+        return MessageWrapper(msg_type=msg_type, text=msg_text, is_attachments=msg_attachments)
+
+    @staticmethod
+    def from_json(json_text: str) -> "MessageWrapper":
+        return MessageWrapper.from_dict(json.loads(json_text))
+
+    def get_type(self) -> int:
+        return self.msg_type
+
+    def get_text(self) -> str:
+        return self.text
+
+    def is_attachments(self) -> bool:
+        return self.attachments

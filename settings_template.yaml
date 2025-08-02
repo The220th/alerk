@@ -8,19 +8,27 @@ uvicorn:
   log_level: "info"
 
 telegram:
-  db_path: "{ROOT}/telegram/database.db"
   token: "your_token_here"
+  allowed_users:
+    - 252389234  # Telegram id 1
+    - 1246324    # Telegram id 2
+    - 235624342  # ...
+    - 453635324  # Telegram id N
 
 keys:
   priv_key: "alerk_priv_key"  # private part
-  pub_key: "alerk_pub_key"  # public part, optional
+  pub_key: "alerk_pub_key"  # public part
   sign_key: "alerk_sigh_key"  # private part
-  verify_key: "alerk_verify_key"  # public part, optional
+  verify_key: "alerk_verify_key"  # public part
 
 smalk:
-  - pub_key: "smalk1_key"
-    code: "smalk1_code"
-  - pub_key: "smalk2_key"
-    code: "smalk2_code"
-  - pub_key: "smalk3_key"
-    code: "smalk3_code"
+  - code: "smalk1_code"
+    pub_key: "smalk1_pub_key"
+    verify_key: "smalk1_verify_key"
+  - code: "smalk2_code"
+    pub_key: "smalk2_pub_key"
+    verify_key: "smalk2_verify_key"
+  - code: "smalk3_code"
+    pub_key: "smalk3_pub_key"
+    verify_key: "smalk3_verify_key"
+

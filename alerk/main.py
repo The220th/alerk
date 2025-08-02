@@ -5,53 +5,31 @@ from fastapi.responses import JSONResponse
 import uvicorn
 from pydantic import ValidationError
 
+from alerk.main_shifty import main_shifty
+from alerk.process_responce import process_responce_main
 from alerk.args_parsing import get_args
 from alerk.setting_manager import SettingManager
-from alerk.crypto import gen_asym_keys, asym_key_to_str, str_to_asym_key, compare_two_keys, calc_key_hash
 from alerk.message import MessageEn
+from alerk.telegram_manager import TelegramManager
+from alerk.key_manager import KeyManager
 
 
 args = get_args()
-if args.command == "gen_keys":
-    col = "="*30
-    sections = [f"\t\t\t\t\t{col}Encryption/Decryption{col}", f"\t\t\t\t\t{col}Sign/Verify{col}"]
-    for i in range(2):
-        print(sections[i])
-        priv_key, pub_key = gen_asym_keys()
-        priv_key_str = asym_key_to_str(priv_key)
-        pub_key_str = asym_key_to_str(pub_key)
-        assert compare_two_keys(str_to_asym_key(priv_key_str, False), priv_key)
-        assert compare_two_keys(str_to_asym_key(pub_key_str, True), pub_key)
-        print(f"Private key: \n{priv_key_str}")
-        print(f"Private key hash: {calc_key_hash(priv_key)}")
-        print(f"\nPublic key: \n{pub_key_str}")
-        print(f"Public key hash: {calc_key_hash(pub_key)}\n")
-    exit()
-elif args.command == "test":
-    from alerk.tests import cur_test
-    cur_test()
-    exit()
-elif args.command == "start":
-    pass
-else:
-    raise RuntimeError(f"WTF command \"args.command\"?")
+
+main_shifty(args)
 
 setting_manager = SettingManager(args.settings_path)
-
-
+telegram_manager = TelegramManager(setting_manager.get_telegram_token())
+key_manager = KeyManager(setting_manager)
 
 
 app = FastAPI()
 
 
 @app.post(setting_manager.get_endpoint())
-def create_item(item: MessageEn):
-    total_price = item.price * item.quantity
-    response = {
-        "name": item.name,
-        "total_price": total_price
-    }
-    return response
+def process_main(msg_in: MessageEn) -> MessageEn:
+    msg_out = process_responce_main(msg_in)
+    return msg_out
 
 
 @app.exception_handler(ValidationError)

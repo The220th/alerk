@@ -4,6 +4,9 @@ import yaml
 from pathlib import Path
 from ksupk import singleton_decorator
 
+from alerk.smalk import Smalk
+
+
 @singleton_decorator
 class SettingManager:
 
@@ -24,4 +27,36 @@ class SettingManager:
                 "port": self.data["uvicorn"]["port"],
                 "log_level": self.data["uvicorn"]["log_level"]
                }
+        return res
+
+    #              ==================== keys ====================
+
+    def get_priv_key(self) -> str:
+        return self.data["keys"]["priv_key"]
+
+    def get_pub_key(self) -> str:
+        return self.data["keys"]["pub_key"]
+
+    def get_sign_key(self) -> str:
+        return self.data["keys"]["sign_key"]
+
+    def get_verify_key(self) -> str:
+        return self.data["keys"]["verify_key"]
+
+    #              ==================== telegram ====================
+
+    def get_telegram_token(self) -> str:
+        return self.data["telegram"]["token"]
+
+    def get_telegram_allowed_users_id(self) -> list[int]:
+        return self.data["telegram"]["allowed_users"]
+
+    #              ==================== smalk ====================
+
+    def get_smalks(self) -> list[Smalk]:
+        res: list[Smalk] = []
+        smalks = self.data["smalk"]
+        for smalk_i in smalks:
+            code, pub_key, verify_key = smalk_i["code"], smalk_i["pub_key"], smalk_i[""]
+            res.append(Smalk(code=code, pub_key=pub_key, verify_key=verify_key))
         return res
