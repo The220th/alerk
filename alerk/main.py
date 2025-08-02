@@ -9,7 +9,7 @@ from alerk.main_shifty import main_shifty
 from alerk.process_responce import process_responce_main
 from alerk.args_parsing import get_args
 from alerk.setting_manager import SettingManager
-from alerk.message import MessageEn
+from alerk_pack.message import MessageEn
 from alerk.telegram_manager import TelegramManager
 from alerk.key_manager import KeyManager
 

@@ -2,8 +2,8 @@
 
 import random
 
-from alerk.message import MessageEn, MessageContainer, KMessage
-from alerk.crypto import gen_asym_keys
+from alerk_pack.message import MessageEn, MessageContainer, KMessage
+from alerk_pack.crypto import gen_asym_keys
 
 def cur_test():
     test_k4hb1jB32()

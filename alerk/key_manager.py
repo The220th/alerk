@@ -3,7 +3,7 @@
 from ksupk import singleton_decorator
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 
-from alerk.crypto import calc_key_hash, str_to_asym_key
+from alerk_pack.crypto import calc_key_hash, str_to_asym_key
 from alerk.setting_manager import SettingManager
 from alerk.smalk import Smalk
 

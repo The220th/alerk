@@ -2,7 +2,7 @@
 
 import argparse
 
-from alerk.crypto import gen_asym_keys, asym_key_to_str, str_to_asym_key, compare_two_keys, calc_key_hash
+from alerk_pack.crypto import gen_asym_keys, asym_key_to_str, str_to_asym_key, compare_two_keys, calc_key_hash
 
 
 def main_shifty(args: argparse.Namespace):

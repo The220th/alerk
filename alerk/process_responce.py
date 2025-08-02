@@ -2,7 +2,7 @@
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 
-from alerk.message import MessageEn, MessageContainer, KMessage, MessageWrapper
+from alerk_pack.message import MessageEn, MessageContainer, KMessage, MessageWrapper
 from alerk.setting_manager import SettingManager
 from alerk.telegram_manager import TelegramManager
 from alerk.key_manager import KeyManager

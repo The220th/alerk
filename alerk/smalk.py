@@ -2,7 +2,7 @@
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 
-from alerk.crypto import str_to_asym_key, calc_key_hash
+from alerk_pack.crypto import str_to_asym_key, calc_key_hash
 
 
 class Smalk:
