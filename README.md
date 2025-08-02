@@ -28,13 +28,13 @@ Perhaps there will be other ways in the future.
 
 - Easy set up.
 
-- Cryptography is in the box. Messages are transmitted through a secure tunnel.
+- Cryptography (RSA4096) is in the box. Messages are transmitted through a secure tunnel.
 
 - There is a verification of the sender (signature). That is, only your `smalk` will be able to report events to your `alerk`.
 
 - No need ssl.
 
-- You can easily write your own `smalk`.
+- You can easily write your own [`smalk`](#writing-your-own-smalk).
 
 # Installing
 
@@ -52,7 +52,7 @@ Clone it from `settings_template.yaml`.
 
 You can get `token` from `@BotFather` (it is telegram bot).
 Input this `token` to yaml setting file.
-Run script from `./extra/warm_up_telebot.py`. Do `/start` from needed telegram users and remember their `telegram id`.
+Run script from `extra/warm_up_telebot.py`. Do `/start` from needed telegram users and remember their `telegram id`.
 Input this `telegram id` to yaml setting file.
 
 ## Set up keys
@@ -76,3 +76,7 @@ Read all yaml setting file and change needed fields.
 ```bash
 alerk start /path/to/your/yaml/setting/file
 ```
+
+# Writing your own smalk
+
+Examine the file `extra/smalk_base.py`.

@@ -29,6 +29,7 @@ class TelegramManager:
                     file_stream = BytesIO(file_content)
                     file_stream.name = file_name
                     file_stream.seek(0)
-                    bot.send_document(telegram_user_id, file_stream, caption=file_name)
+                    # bot.send_document(telegram_user_id, file_stream, caption=file_name)
+                    bot.send_document(telegram_user_id, file_stream)
                 except Exception as e:
                     bot.send_message(telegram_user_id, "Cannot send file.")

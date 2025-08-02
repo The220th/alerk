@@ -42,7 +42,7 @@ def process_responce_form_answer(msg: KMessage, from_whom: Smalk) -> KMessage:
     raws = msg.get_raws()
 
     mw: MessageWrapper = MessageWrapper.from_json(text)
-    if mw.get_type() == MessageWrapper.MSG_TUPE_REPORT:
+    if mw.get_type() == MessageWrapper.MSG_TYPE_REPORT:
         tm = TelegramManager()
         sm = SettingManager()
         t_users = sm.get_telegram_allowed_users_id()

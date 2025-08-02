@@ -57,6 +57,6 @@ class SettingManager:
         res: list[Smalk] = []
         smalks = self.data["smalk"]
         for smalk_i in smalks:
-            code, pub_key, verify_key = smalk_i["code"], smalk_i["pub_key"], smalk_i[""]
+            code, pub_key, verify_key = smalk_i["code"], smalk_i["pub_key"], smalk_i["verify_key"]
             res.append(Smalk(code=code, pub_key=pub_key, verify_key=verify_key))
         return res
