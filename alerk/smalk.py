@@ -2,7 +2,7 @@
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 
-from alerk_pack.crypto import str_to_asym_key, calc_key_hash
+from alerk_pack.crypto import str_to_asym_key, calc_asym_key_hash
 
 
 class Smalk:
@@ -17,7 +17,7 @@ class Smalk:
         else:
             raise ValueError("pub_key must be only RSAPublicKey or str")
 
-        self.pub_key_hash: str = calc_key_hash(self.pub_key)
+        self.pub_key_hash: str = calc_asym_key_hash(self.pub_key)
 
         if isinstance(verify_key, RSAPublicKey):
             self.verify_key: RSAPublicKey = verify_key
@@ -26,7 +26,7 @@ class Smalk:
         else:
             raise ValueError("verify_key must be only RSAPublicKey or str")
 
-        self.verify_key_hash: str = calc_key_hash(self.verify_key)
+        self.verify_key_hash: str = calc_asym_key_hash(self.verify_key)
 
     def get_code(self) -> str:
         return self.code

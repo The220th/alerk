@@ -5,8 +5,9 @@
 
 import time
 import requests
-from alerk_pack.message import MessageWrapper, KMessage, MessageContainer, MessageEn
-from alerk_pack.crypto import str_to_asym_key
+from alerk_pack.message import MessageWrapper
+from alerk_pack.crypto import str_to_asym_key, str_to_sym_key
+from alerk_pack.communicator import Kommunicator
 
 
 # Keys below can be got from command:
@@ -43,11 +44,28 @@ alerk_pub_key = str_to_asym_key(alerk_pub_key, True)
 alerk_verify_key = str_to_asym_key(alerk_verify_key, True)
 
 
+# Generate symmetric key for encrypting attachments (raws)
+from alerk_pack.crypto import gen_sym_key, sym_key_to_str
+sym_key_str = sym_key_to_str(gen_sym_key())
+sym_key = str_to_sym_key(sym_key_str)
+# or sym_key = None, if you do not need attachments encryption.
+
+
 # Define ip, port and entry point of alerk
 IP, PORT, ENTRY_POINT = "127.0.0.1", 8000, "/entry"
 url = f"http://{IP}:{PORT}{ENTRY_POINT}"
 
 
+# Create and start Kommunicator
+kommunicator = Kommunicator(url=url,
+                            priv_key=priv_key, public_key=public_key,
+                            sign_key=sign_key, verify_key=verify_key,
+                            alerk_pub_key=alerk_pub_key, alerk_verify_key=alerk_verify_key,
+                            sym_key=sym_key)  # You can sym_key=None, if no attachment encryption need
+kommunicator.start()
+
+
+# Now you can just add messages and Kommunicator will do the rest itself.
 def event_happened():
     import random
     time.sleep(random.randint(0, 5000)/1000)  # wait from 0 to 5 sec
@@ -70,69 +88,16 @@ def get_example_image() -> bytes:
     return byte_io.getvalue()
 
 
-# Now about MessageWrapper, KMessage, MessageContainer, MessageEn
-#
-# MessageWrapper is high-level message abstraction that does not contain any cryptography
-#
-# KMessage is also high-level message abstraction, but it contains cryptography sign of sender. Also, it contains attached files.
-#
-# MessageContainer is "box" in which an unencrypted message is placed, then they are encrypted. And vice versa.
-#
-# MessageEn is encrypted message that looks like garbage.
-
-
-# The main loop, which can be parallelized if needed.
 while True:
     event_happened()
-
     message_wrapper = MessageWrapper(msg_type=MessageWrapper.MSG_TYPE_REPORT, text="Event happened!", is_attachments=True)
     # Set is_attachments=False, if you do not have any attached files.
     # For example there is image, as attached file.
     image_bytes: bytes = get_example_image()
-
     # It is recommended to encrypt any attaches, if you do not trust telegram. You can also use coding event text. For example:
     # MessageWrapper(..., text="Event code 41", ...)
-
     raws, one_image = [], ("image_name.png", image_bytes)
-    raws.append(one_image)  # Leave raws empty (len=0) if you set MessageWrapper(..., is_attachments=False)
+    raws.append(one_image)
 
-    kmsg = KMessage(text=message_wrapper.to_json(), raws=raws)
-
-    kimg_as_data = kmsg.to_dict(sign_key, verify_key)  # Specify sender sign and verify key
-
-    message_container = MessageContainer(kimg_as_data)  # Put it into container
-    encrypted_message_container = message_container.encrypt(alerk_pub_key)  # Specify receiver (alerk) public key, while encrypting
-
-    men: MessageEn = encrypted_message_container.get_data()  # get MessageEn
-    men_d = men.to_dict()  # Just a lot of garbage
-
-    response = requests.post(url, json=men_d)
-    if response.status_code != 200:
-        pass
-        print(response.content)
-        # Something wrong
-
-    # Here we go again, but reverse
-
-    men_d = response.json()
-    men = MessageEn.from_dict(men_d)
-    encrypted_message_container = MessageContainer(men)
-    message_container = encrypted_message_container.decrypt(priv_key)  # Specify receiver (smalk) private key, while decrypting
-
-    kimg_as_data = message_container.get_data()
-
-    kmsg = KMessage.from_dict(kimg_as_data, alerk_verify_key)  # Specify sender verify key
-
-    raws = kmsg.get_raws()
-    json_text = kmsg.get_text()
-
-    message_wrapper = MessageWrapper.from_json(json_text)
-
-    if message_wrapper.get_type() == MessageWrapper.MSG_TYPE_OK:  # If all is ok (event delivered), you must get type MSG_TYPE_OK
-        pass
-        # All is ok, you can do next loop
-    elif message_wrapper.get_type() == MessageWrapper.MSG_TYPE_ERROR: # Error happened
-        pass
-        # Do something. For example wait for few and try again
-
-    exit()
+    kommunicator.add_msg(message_wrapper, raws)  # Kommunicator will send message itself. If error happened, Kommunicator will try sending it again and again...
+    # or just kommunicator.add_msg(message_wrapper), if you do not have any attachments and MessageWrapper(..., is_attachments=False)

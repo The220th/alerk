@@ -4,9 +4,10 @@ import random
 
 from alerk_pack.message import MessageEn, MessageContainer, KMessage
 from alerk_pack.crypto import gen_asym_keys
+from alerk_pack.crypto import gen_sym_key, sym_encrypt, sym_decrypt, sym_key_to_str, str_to_sym_key, compare_two_sym_keys
 
 def cur_test():
-    test_k4hb1jB32()
+    test_4j4H38l2vm()
     print("OK")
 
 def test_ejh3jvnnbt():
@@ -64,3 +65,29 @@ def test_k4hb1jB32():
         kmsg2 = KMessage.from_dict(d2, pub_key1)
 
         assert kmsg1.is_equal(kmsg2)
+
+
+def test_4j4H38l2vm():
+    from ksupk import gen_random_string
+    from tqdm import tqdm
+    for _ in tqdm(range(1000)):
+        key1 = gen_sym_key()
+
+        key2 = str_to_sym_key(sym_key_to_str(key1))
+
+        assert compare_two_sym_keys(key1, key2)
+
+        data: str = gen_random_string(random.randint(0, 10000000))
+
+        data_en_1 = sym_encrypt(data.encode(encoding="utf-8"), key1)
+        data_en_2 = sym_encrypt(data.encode(encoding="utf-8"), key2)
+
+        assert data_en_1 != data_en_2
+
+        data_de_1 = sym_decrypt(data_en_1, key1).decode(encoding="utf-8")
+        data_de_2 = sym_decrypt(data_en_1, key2).decode(encoding="utf-8")
+        data_de_3 = sym_decrypt(data_en_2, key2).decode(encoding="utf-8")
+
+        assert data_de_1 == data_de_2
+        assert data_de_2 == data_de_3
+        assert data_de_1 == data

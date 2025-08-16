@@ -4,6 +4,9 @@
 
 ![](imgs/intro.drawio.png)
 
+> [!WARNING]
+> This project has not been audited for security.
+
 # Info
 
 **READ THIS SECTION FIRST**
@@ -16,7 +19,9 @@ There are two entities:
 
 Known smalks:
 
-- comming soon maybe=/
+- [smalk_disk_check](https://github.com/The220th/smalk_disk_check): disks and raids monitoring.
+
+You can try to play with crypto module with using GUI: [krypto_gui_smalk](https://github.com/The220th/krypto_gui_smalk). 
 
 ## Current way to notify
 
@@ -46,14 +51,14 @@ pip3 install alerk
 
 ## Create yaml setting file
 
-Clone it from `settings_template.yaml`.
+Clone it from [`settings_template.yaml`](settings_template.yaml).
 
 ## Set up telegram bot
 
 You can get `token` from `@BotFather` (it is telegram bot).
 Input this `token` to yaml setting file.
 Run script from `extra/warm_up_telebot.py`. Do `/start` from needed telegram users and remember their `telegram id`.
-Input this `telegram id` to yaml setting file.
+Input this `telegram id` to yaml setting file. Kill python instance of `extra/warm_up_telebot.py`.
 
 ## Set up keys
 
@@ -65,7 +70,7 @@ alerk gen_keys
 
 Put this keys to yaml setting file.
 
-Do it for each `smalk`. Put their keys in their configuration files, as well as only their public keys in yaml setting file.
+Do it for each `smalk`. Put their keys in their configuration files, as well as only their public keys in yaml setting file of alerk.
 
 ## Set up other settings
 
@@ -79,4 +84,4 @@ alerk start /path/to/your/yaml/setting/file
 
 # Writing your own smalk
 
-Examine the file `extra/smalk_base.py`.
+Examine the files: [`extra/smalk_base.py`](extra/smalk_base.py) and [`extra/smalk_base_kommunicator.py`](extra/smalk_base_kommunicator.py).
