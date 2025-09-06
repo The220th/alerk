@@ -1,0 +1,21 @@
+# create venv and install alerk: python3 -m venv venv && source venv/bin/activate && python3 -m pip install --upgrade pip && pip3 install alerk
+# Edit it with replacing <absolute_path_of_alerk_work_dir>, <absolute_path_of_alerk_venv> and <absolute_path_of_alerk_setting.yaml>
+# put it as /etc/systemd/system/alerk.service
+# and run: sudo systemctl daemon-reload && sudo systemctl start alerk.service && sudo systemctl enable alerk.service
+
+[Unit]
+Description=alerk service
+After=network.target
+
+[Service]
+Type=simple
+# WorkingDirectory is any dir or just comment
+WorkingDirectory=<absolute_path_of_alerk_work_dir>
+ExecStart=<absolute_path_of_alerk_venv>/bin/alerk start <absolute_path_of_alerk_setting.yaml>
+ExecStop=/bin/kill $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID && <absolute_path_of_alerk_venv>/bin/alerk start <absolute_path_of_alerk_setting.yaml>
+Restart=on-failure
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
